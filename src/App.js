@@ -29,7 +29,7 @@ function App() {
   const [onChangeSearch, setOnChangeSearch] = useState(false);
   const itemsPerPage = 5;
 
-  const serverUrl = "http://localhost:3000";
+  const serverUrl = "http://localhost:5000";
   const handleFilterChange = (event) => {
     setFilterType(event.target.value);
   };
