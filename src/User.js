@@ -57,7 +57,7 @@ function User({ action, onClose, setIsLogin }) {
 
     if (action === "register") {
       axios
-        .post("http://localhost:3000/register", data)
+        .post("http://localhost:5000/register", data)
         .then((response) => {
           handleResponse(response, response.data.message);
         })
@@ -66,7 +66,7 @@ function User({ action, onClose, setIsLogin }) {
         });
     } else {
       axios
-        .post("http://localhost:3000/login", data)
+        .post("http://localhost:5000/login", data)
         .then((response) => {
           handleResponse(response, response.data.message);
           localStorage.setItem("token", response.data.token);
