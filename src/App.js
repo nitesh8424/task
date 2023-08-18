@@ -107,13 +107,9 @@ function App() {
           });
         }
         if (clickSearch) {
-          console.log("on search click");
-          console.log("imagesddd", res.data.images);
           setImages(res.data.images);
           setSearchValue("");
         } else {
-          console.log("on change search");
-          console.log("imagesddsdasdd", res.data.images);
           setSearchedImages(res.data.images);
         }
       })
@@ -138,8 +134,6 @@ function App() {
     }
 
     if (isLogin && parsedUserData) {
-      console.log("token", storedToken);
-      console.log("userData", parsedUserData);
       setIsLoading(true);
       axios
         .get(`${serverUrl}/search`, {
@@ -150,7 +144,6 @@ function App() {
           },
         })
         .then((res) => {
-          console.log("images", images);
           setImages(res.data.images);
           setIsLoading(false);
         })
