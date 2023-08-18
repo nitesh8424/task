@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LoadingSpinner from "./loading";
 
 function UploadImage({ teamName, onClose }) {
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageDimensions, setImageDimensions] = useState({
     width: 0,
@@ -18,7 +20,7 @@ function UploadImage({ teamName, onClose }) {
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     setSelectedImage(file);
-  
+
     const reader = new FileReader();
     reader.onload = function (e) {
       const image = new Image();
@@ -29,9 +31,9 @@ function UploadImage({ teamName, onClose }) {
       };
     };
     reader.readAsDataURL(file);
-    console.log('selectedImage', imageDimensions); // Logging dimensions here
+    console.log("selectedImage", imageDimensions); // Logging dimensions here
   };
-  
+
   const handleInputChange = (event, setState) => {
     setState(event.target.value);
   };
@@ -48,25 +50,26 @@ function UploadImage({ teamName, onClose }) {
       toast.success(successMessage, {
         position: toast.POSITION.TOP_RIGHT,
       });
-    } 
+    }
     onClose();
   };
 
   const handleError = (error) => {
-   console.log('error', error.response.message)
+    console.log("error", error.response.message);
     if (error.response) {
       if (error.response.status === 401) {
-        alert("Your are not authorized, please login")
+        alert("Your are not authorized, please login");
       } else {
-        alert("An error occurred")
+        alert("An error occurred");
       }
     } else {
-      alert("An error occurred")
+      alert("An error occurred");
     }
   };
 
   const uploadImage = async (event) => {
     event.preventDefault();
+    setIsLoading(true);
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
@@ -78,7 +81,7 @@ function UploadImage({ teamName, onClose }) {
     formData.append("teamName", teamName);
     try {
       const response = await axios.post(
-        "http://localhost:3000/upload",
+        "http://localhost:5000/upload",
         formData,
         {
           headers: {
@@ -86,9 +89,10 @@ function UploadImage({ teamName, onClose }) {
           },
         }
       );
-
+      setIsLoading(false);
       handleResponse(response, response.data.message);
     } catch (error) {
+      setIsLoading(false);
       handleError(error);
     }
   };
@@ -171,6 +175,7 @@ function UploadImage({ teamName, onClose }) {
           </form>
         </div>
       </div>
+      {isLoading && <LoadingSpinner />}
     </div>
   );
 }

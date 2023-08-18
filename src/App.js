@@ -4,9 +4,9 @@ import UploadImage from "./uploadImageModal";
 import axios from "axios";
 import SelectedImage from "./selectedImageModal";
 import User from "./User";
-import jwtDecode from "jwt-decode";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LoadingSpinner from "./loading";
 
 function App() {
   const [images, setImages] = useState([]);
@@ -23,10 +23,12 @@ function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [action, setAction] = useState("");
   const [isLogin, setIsLogin] = useState(false);
-  const [username, setUsername] = useState("");
-  const [teamName, setTeamName] = useState("");
+  const [userData, setUserData] = useState();
   const [currentPage, setCurrentPage] = useState(1);
   const [onChangeSearch, setOnChangeSearch] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [clickSearch, setClickSearch] = useState(false);
+  const [isReload, setIsReload] = useState(false);
   const itemsPerPage = 5;
 
   const serverUrl = "http://localhost:5000";
@@ -35,8 +37,13 @@ function App() {
   };
 
   const logout = () => {
-    setIsLogin(false);
-    localStorage.removeItem("token");
+    localStorage.clear();
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLogin(false);
+      setImages([]);
+      setIsLoading(false);
+    }, 100);
   };
 
   const handleSearchChange = (event) => {
@@ -44,53 +51,51 @@ function App() {
     setSearchValue(newSearchValue);
     setOnChangeSearch(newSearchValue);
 
-    if (newSearchValue) {
-      const filteredImages = images.filter(
-        (image) =>
-          image.title.includes(newSearchValue) ||
-          image.description.includes(newSearchValue)
-      );
-      setSearchedImages(filteredImages);
+    if (filterType !== "date") {
+      if (newSearchValue) {
+        const filteredImages = images.filter(
+          (image) =>
+            image.title.includes(newSearchValue) ||
+            image.description.includes(newSearchValue)
+        );
+        setSearchedImages(filteredImages);
+      } else {
+        setSearchedImages([]);
+      }
+    }
+  };
+  const handleSearchClick = (event) => {
+    if (searchValue !== "") {
+      setIsLoading(true);
+      setClickSearch(true);
+      getImages();
+      setIsLoading(false);
     } else {
-      setSearchedImages([]); // Clear searchedImages when search input is empty
+      setIsReload(true);
     }
   };
 
-  const handleSearchClick = () => {
-    getImages(searchValue);
-  };
-
-  const getImages = (useEmptyParams) => {
+  const getImages = () => {
     const queryParams = {
       page: currentPage,
       perPage: itemsPerPage,
-      teamName: teamName,
+      teamName: userData?.teamName,
     };
     console.log("quiey", queryParams);
-    if (useEmptyParams) {
-      queryParams.keyword = ""; // Empty keyword to get all images
-      queryParams.width = null; // Clear width filter
-      queryParams.height = null; // Clear height filter
-      queryParams.colorPalette = ""; // Clear colorPalette filter
-      queryParams.date = ""; // Clear date filter
-    } else {
-      if (filterType === "text") {
-        queryParams.keyword = searchValue;
-      } else if (filterType === "date") {
-        queryParams.date = searchValue;
-      }
-
-      if (width) {
-        queryParams.width = width;
-      }
-      if (height) {
-        queryParams.height = height;
-      }
-      if (colorPalette) {
-        queryParams.colorPalette = colorPalette;
-      }
+    if (filterType === "text") {
+      queryParams.keyword = searchValue;
+    } else if (filterType === "date") {
+      queryParams.date = searchValue;
     }
-
+    if (width) {
+      queryParams.width = width;
+    }
+    if (height) {
+      queryParams.height = height;
+    }
+    if (colorPalette) {
+      queryParams.colorPalette = colorPalette;
+    }
     axios
       .get(`${serverUrl}/search`, {
         params: queryParams,
@@ -100,17 +105,13 @@ function App() {
           toast.error("No results found", {
             position: toast.POSITION.TOP_RIGHT,
           });
-          setSearchValue("");
-          setTimeout(() => {
-            getImages(true);
-          }, 5000);
         }
-        if (!onChangeSearch) {
+        if (clickSearch) {
           setImages(res.data.images);
+          setSearchValue("");
         } else {
           setSearchedImages(res.data.images);
         }
-        setSearchValue("");
       })
       .catch((error) => {
         toast.error(error);
@@ -124,28 +125,34 @@ function App() {
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    if (storedToken || isLogin) {
-      const decodedToken = jwtDecode(storedToken);
-      setUsername(decodedToken.username);
-      setTeamName(decodedToken.teamName);
+    const getUserData = localStorage.getItem("userData");
+    const parsedUserData = JSON.parse(getUserData);
+    setUserData(parsedUserData);
+
+    if (storedToken && parsedUserData) {
       setIsLogin(true);
     }
 
-    axios
-      .get(`${serverUrl}/search`, {
-        params: {
-          page: currentPage,
-          perPage: itemsPerPage,
-          teamName: teamName,
-        },
-      })
-      .then((res) => {
-        setImages(res.data.images); // Update the images state directly
-      })
-      .catch((error) => {
-        toast.error(error);
-      });
-  }, [currentPage, isAdvanceSearch]);
+    if (isLogin && parsedUserData) {
+      setIsLoading(true);
+      axios
+        .get(`${serverUrl}/search`, {
+          params: {
+            page: currentPage,
+            perPage: itemsPerPage,
+            teamName: parsedUserData?.teamName,
+          },
+        })
+        .then((res) => {
+          setImages(res.data.images);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          toast.error(error);
+          setIsLoading(false);
+        });
+    }
+  }, [isLogin, currentPage, isReload]);
 
   return (
     <div className="App">
@@ -163,7 +170,7 @@ function App() {
             {isLogin ? (
               <div>
                 {" "}
-                <p> Welcome {username}</p>
+                <p> Welcome {userData?.username}</p>
                 <p onClick={logout}> Logout </p>{" "}
               </div>
             ) : (
@@ -210,7 +217,7 @@ function App() {
                   value={searchValue}
                   onChange={handleSearchChange}
                 />
-                {searchedImages.length > 0 && (
+                {searchedImages.length > 0 && searchValue !== "" && (
                   <div className="thumbnailList">
                     {searchedImages.map((image) => (
                       <div
@@ -352,13 +359,17 @@ function App() {
       </div>
 
       {isUpload && (
-        <UploadImage teamName={teamName} onClose={() => setIsUpload(false)} />
+        <UploadImage
+          teamName={userData?.teamName}
+          onClose={() => setIsUpload(false)}
+        />
       )}
       {isOpen && (
         <User
           action={action}
           onClose={() => setIsOpen(false)}
-          setIsLogin={() => setIsLogin(true)}
+          setIsLogin={setIsLogin}
+          setUserData={setUserData}
         />
       )}
 
@@ -368,6 +379,8 @@ function App() {
           onClose={() => setIsSelectedImage(false)}
         />
       )}
+
+      {isLoading && <LoadingSpinner />}
     </div>
   );
 }
