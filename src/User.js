@@ -3,7 +3,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-function User({ action, onClose, setIsLogin }) {
+function User({ action, onClose, setIsLogin}) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [teamName, setTeamName] = useState("");
@@ -54,10 +54,9 @@ function User({ action, onClose, setIsLogin }) {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = { username, password, teamName };
-
     if (action === "register") {
       axios
-        .post("http://localhost:3000/register", data)
+        .post("http://localhost:5000/register", data)
         .then((response) => {
           handleResponse(response, response.data.message);
         })
@@ -66,9 +65,11 @@ function User({ action, onClose, setIsLogin }) {
         });
     } else {
       axios
-        .post("http://localhost:3000/login", data)
+        .post("http://localhost:5000/login", data)
         .then((response) => {
           handleResponse(response, response.data.message);
+          const userData = response.data.user;
+          localStorage.setItem("userData", JSON.stringify(response.data.user))
           localStorage.setItem("token", response.data.token);
           setIsLogin(true);
         })
@@ -101,7 +102,7 @@ function User({ action, onClose, setIsLogin }) {
             <div className="inputContainer">
               <label>Password</label>
               <input
-                type="text"
+                type="password"
                 placeholder="Password"
                 className="inputField"
                 onChange={handlePasswordChange}

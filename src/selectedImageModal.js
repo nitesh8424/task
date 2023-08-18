@@ -1,7 +1,7 @@
 import "./App.css";
 
 function SelectedImage({ selectedImage, onClose }) {
-  const serverUrl = "http://localhost:3000";
+  const serverUrl = "http://localhost:5000";
   return (
     <div className="uploadModalBox">
       <div className="uploadModal" style={{height: '400px', overflowY:'scroll', scrollBehavior:'auto'}}>
