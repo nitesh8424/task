@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useDispatch } from 'react-redux';
+import { loginUser } from './actions';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-function User({ action, onClose, setIsLogin}) {
+function User({ action, onClose, setIsLogin }) {
+  const dispatch = useDispatch();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [teamName, setTeamName] = useState("");
@@ -16,9 +19,9 @@ function User({ action, onClose, setIsLogin}) {
     setPassword(event.target.value);
   };
 
-  const handleTeamNameChange = (event) => {
-    setTeamName(event.target.value);
-  };
+  // const handleTeamNameChange = (event) => {
+  //   setTeamName(event.target.value);
+  // };
 
   const handleResponse = (response, successMessage) => {
     if (response.status === 200) {
@@ -53,10 +56,12 @@ function User({ action, onClose, setIsLogin}) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    console.log('test')
     const data = { username, password, teamName };
+    console.log('data',data)
     if (action === "register") {
       axios
-        .post("http://localhost:5000/register", data)
+        .post("http://localhost:5000/auth/register", data)
         .then((response) => {
           handleResponse(response, response.data.message);
         })
@@ -65,13 +70,11 @@ function User({ action, onClose, setIsLogin}) {
         });
     } else {
       axios
-        .post("http://localhost:5000/login", data)
+        .post("http://localhost:5000/auth/login", data)
         .then((response) => {
-          handleResponse(response, response.data.message);
+          localStorage.setItem("token", response.data.token)
           const userData = response.data.user;
-          localStorage.setItem("userData", JSON.stringify(response.data.user))
-          localStorage.setItem("token", response.data.token);
-          setIsLogin(true);
+          dispatch(loginUser(userData));
         })
         .catch((error) => {
           handleError(error);
@@ -108,7 +111,7 @@ function User({ action, onClose, setIsLogin}) {
                 onChange={handlePasswordChange}
               />
             </div>
-            {action === "register" && (
+            {/* {action === "register" && (
               <div className="inputContainer">
                 <label>Team Name</label>
                 <select
@@ -123,16 +126,16 @@ function User({ action, onClose, setIsLogin}) {
                   <option value="accountant"> Accountant </option>
                 </select>
               </div>
-            )}
+            )} */}
             <div className="submitButtonContainer">
               <input
                 type="submit"
-                value={action === "register" ? "Register" : "Login"}
+                value={"Login"}
                 className="submitButton"
               />
             </div>
           </form>
-          <ToastContainer />
+          {/* <ToastContainer /> */}
         </div>
       </div>
     </div>

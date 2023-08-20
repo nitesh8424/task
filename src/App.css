@@ -339,3 +339,10 @@ label {
   border-radius: 50%;
   animation: spinner 1.5s linear infinite;
 }
+
+.header{
+  display: flex;
+  gap: 20px;
+  justify-content: right;
+  margin-right: 10px;
+}

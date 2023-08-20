@@ -1,10 +1,10 @@
-import "./App.css";
+import React from "react";
 
 function SelectedImage({ selectedImage, onClose }) {
   const serverUrl = "http://localhost:5000";
   return (
     <div className="uploadModalBox">
-      <div className="uploadModal" style={{height: '400px', overflowY:'scroll', scrollBehavior:'auto'}}>
+      <div className="uploadModal" style={{ height: "400px", overflowY: "scroll", scrollBehavior: "auto" }}>
         <button className="closeButton" onClick={onClose}>
           &times;
         </button>

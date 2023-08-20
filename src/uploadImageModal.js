@@ -2,15 +2,12 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import LoadingSpinner from "./loading";
+import LoadingSpinner from "./Loading";
 
 function UploadImage({ teamName, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [imageDimensions, setImageDimensions] = useState({
-    width: 0,
-    height: 0,
-  });
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState("");
   const [description, setDescription] = useState("");
@@ -55,10 +52,9 @@ function UploadImage({ teamName, onClose }) {
   };
 
   const handleError = (error) => {
-    console.log("error", error.response.message);
     if (error.response) {
       if (error.response.status === 401) {
-        alert("Your are not authorized, please login");
+        alert("You are not authorized, please log in");
       } else {
         alert("An error occurred");
       }
@@ -79,9 +75,10 @@ function UploadImage({ teamName, onClose }) {
     formData.append("height", imageDimensions.height);
     formData.append("tag", tag);
     formData.append("teamName", teamName);
+    console.log('formData', formData)
     try {
       const response = await axios.post(
-        "http://localhost:5000/upload",
+        "http://localhost:5000/images/upload",
         formData,
         {
           headers: {
@@ -120,6 +117,7 @@ function UploadImage({ teamName, onClose }) {
                     placeholder="Title"
                     className="inputField"
                     onChange={(e) => handleInputChange(e, setTitle)}
+                    required
                   />
                 </div>
                 <div className="inputContainer">
@@ -129,6 +127,7 @@ function UploadImage({ teamName, onClose }) {
                     placeholder="Description"
                     className="inputField"
                     onChange={(e) => handleInputChange(e, setDescription)}
+                    required
                   />
                 </div>
                 <div className="inputContainer">
@@ -139,6 +138,7 @@ function UploadImage({ teamName, onClose }) {
                     placeholder="Enter tag"
                     value={tag}
                     onChange={(e) => handleInputChange(e, setTag)}
+                    required
                   />
                 </div>
                 <div className="inputContainer">
@@ -155,6 +155,7 @@ function UploadImage({ teamName, onClose }) {
                     value="Add"
                     className="submitButton"
                     onClick={addKeyword}
+                    required
                   />
                 </div>
               </>
