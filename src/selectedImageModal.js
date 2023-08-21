@@ -1,6 +1,7 @@
 import React from "react";
 
 function SelectedImage({ selectedImage, onClose }) {
+  console.log('selected Image', selectedImage)
   const serverUrl = "http://localhost:5000";
   return (
     <div className="uploadModalBox">
@@ -28,6 +29,8 @@ function SelectedImage({ selectedImage, onClose }) {
                   </div>
                 ))}
               </div>
+              <p>Image Width : {selectedImage.imageData.width}px</p>
+              <p>Image Height : {selectedImage.imageData.height}px</p>
               <p>ID : {selectedImage.imageData.id}</p>
               <p>Upload Date : {selectedImage.imageData.uploadDate}</p>
             </div>

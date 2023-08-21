@@ -10,42 +10,55 @@ import axios from "axios";
 const App = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
+  const [action, setAction] = useState("");
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   const token = localStorage.getItem("token");
-  useEffect(()=>{
-    if(token)
-    {
-      console.log('token', token)
-        axios.get("http://localhost:5000/auth/profile", {
+  useEffect(() => {
+    if (token) {
+      console.log("token", token);
+      axios
+        .get("http://localhost:5000/auth/profile", {
           headers: {
-            Authorization: `Bearer ${token}` // Add the token to the headers
-          }
+            Authorization: `Bearer ${token}`, // Add the token to the headers
+          },
         })
-        .then((response)=>{
-          console.log('resp', response)
+        .then((response) => {
+          console.log("resp", response);
           dispatch(loginUser(response.data));
-        })
+        });
     }
-  },[isLogin])
-  console.log('user', user)
+  }, [isLogin]);
+
+  function handleAuthClick(event) {
+    setAction(event.target.value);
+    setIsOpen(!isOpen);
+  }
 
   if (!token) {
     return (
       <div>
-        <div className="uploadModalBox" style={{flexDirection: 'column'}}>
+        <div className="uploadModalBox" style={{ flexDirection: "column" }}>
           <p>Please login to access the dashboard.</p>
+          <div style={{gap:"20px", display: "flex"}}>
           <button
             className="submitButton"
-            onClick={() => {
-              setIsOpen(!isOpen);
-            }}
+            value="Login"
+            onClick={handleAuthClick}
           >
             Login
           </button>
+          <button
+            className="submitButton"
+            value="Register"
+            onClick={handleAuthClick}
+          >
+            Register
+          </button>
+          </div>
         </div>
-        {isOpen && <User onClose={() => setIsOpen(false)}/>}
+        {isOpen && <User action={action} onClose={() => setIsOpen(false)} />}
       </div>
     );
   }
@@ -54,8 +67,15 @@ const App = () => {
     <>
       <div className="dashboard">
         <div className="header">
-        <h2>Welcome, {user?.username}!</h2>
-        <p className="submitButton" onClick={() => dispatch(logoutUser(),localStorage.removeItem("token"))}>Logout</p>
+          <h2>Welcome, {user?.username}!</h2>
+          <p
+            className="submitButton"
+            onClick={() =>
+              dispatch(logoutUser(), localStorage.removeItem("token"))
+            }
+          >
+            Logout
+          </p>
         </div>
         <Dashboard />
       </div>

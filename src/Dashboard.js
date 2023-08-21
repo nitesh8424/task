@@ -14,7 +14,6 @@ function Dashboard() {
   const [searchedImages, setSearchedImages] = useState([]);
   const [isUpload, setIsUpload] = useState(false);
   const [filterType, setFilterType] = useState("text");
-  // const [searchValue, setSearchValue] = useState("");
   const [selectedImage, setSelectedImage] = useState();
   const [isSelectedImage, setIsSelectedImage] = useState(false);
   const [isAdvanceSearch, setIsAdvanceSearch] = useState(false);
@@ -23,8 +22,8 @@ function Dashboard() {
   const [colorPalette, setColorPalette] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [clickSearch, setClickSearch] = useState(false);
   const itemsPerPage = 3;
+  
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
   const search = useSelector((state) => state.searchValue);
@@ -32,34 +31,37 @@ function Dashboard() {
 
   const handleFilterChange = (event) => {
     setFilterType(event.target.value);
+    console.log('filter', filterType)
+    dispatch(searchValue(event.target.value));
   };
 
   const handleSearchChange = (event) => {
-    const newSearchValue = event.target.value;
-    console.log('asdasdasds', newSearchValue)
     dispatch(searchValue(event.target.value));
-    console.log('searchValue',search)
-    // if (filterType !== "date") {
-    //   if (searchValue) {
-    //     const filteredImages = images.filter(
-    //       (image) =>
-    //         image.title.includes(newSearchValue) ||
-    //         image.description.includes(newSearchValue)
-    //     );
-    //     setSearchedImages(filteredImages);
-    //   } else {
-    //     setSearchedImages([]);
-    //   }
-    // }
+    getOnSearchImages();
   };
 
-  const handleSearchClick = (event) => {
-      setIsLoading(true);
-      setClickSearch(true);
-      getImages();
-      setCurrentPage('');
+  const handleClearAll = ()=>{
+    dispatch(searchValue(''))
+    setWidth('');
+    setHeight('');
+    setColorPalette('');
+    getImages();
+  }
+
+  const handleSearchClick = async () => {
+    setIsLoading(true);
+    try {
+      await getImages();
+      dispatch(searchValue(''));
+      if(filterType === "date")
+      {
+        setFilterType("text");
+      }
+    } catch (error) {
+      toast.error("An error occurred while searching.");
+    } finally {
       setIsLoading(false);
-      console.log('searchinnnnn', search)
+    }
   };
  
   const getImages = () => {
@@ -75,6 +77,52 @@ function Dashboard() {
         queryParams.date = search;
       }
       if (width) {
+        console.log('wdith', width)
+        queryParams.width = width;
+      }
+      if (height) {
+        queryParams.height = height;
+      }
+      if (colorPalette) {
+        queryParams.colorPalette = colorPalette;
+      }
+    }
+    console.log("query width", queryParams.width);
+
+    console.log("query", queryParams);
+    axios
+      .get(`${serverUrl}/images/search`, {
+        params: queryParams,
+      })
+      .then((res) => {
+        if (res.data.images.length === 0) {
+          toast.error("No results found", {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
+         setImages(res.data.images);
+         setIsLoading(false)
+      })
+      .catch((error) => {
+        toast.error(error);
+        setIsLoading(false)
+      });
+  };
+
+  const getOnSearchImages = ()=>{
+    const queryParams = {
+      page: currentPage,
+      perPage: itemsPerPage,
+      teamName: user?.teamName,
+    };
+    if (search !== "") {
+      if (filterType === "text") {
+        queryParams.keyword = search;
+      } else if (filterType === "date") {
+        queryParams.date = search;
+      }
+      if (width) {
+        console.log('wdith', width)
         queryParams.width = width;
       }
       if (height) {
@@ -95,43 +143,21 @@ function Dashboard() {
             position: toast.POSITION.TOP_RIGHT,
           });
         }
-        if (clickSearch) {
-          setImages(res.data.images);
-          console.log('imagesssss', res.data.images)
-          dispatch(searchValue(''))
-        } else {
-          setSearchedImages(res.data.images);
-        }
+        setSearchedImages(res.data.images);
       })
       .catch((error) => {
         toast.error(error);
       });
-  };
+  }
 
   const openSeletedImage = (imageId) => {
     const imageData = images.find((img) => img._id === imageId);
     setSelectedImage({ imageData });
   };
+
   useEffect(() => {
-    console.log("user", user);
     setIsLoading(true);
-    axios
-      .get(`${serverUrl}/images/search`, {
-        params: {
-          page: currentPage,
-          perPage: itemsPerPage,
-          teamName: user?.teamName,
-        },
-      })
-      .then((res) => {
-        console.log('imagesssss', res.data.images)
-        setImages(res.data.images);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        toast.error(error);
-        setIsLoading(false);
-      });
+    getImages()
   }, [user, currentPage]);
 
   return (
@@ -157,7 +183,7 @@ function Dashboard() {
                   placeholder={`Search using ${
                     filterType === "date" ? "date" : "title or keyword"
                   }`}
-                  // value={search}
+                  value={search}
                   onChange={handleSearchChange}
                 />
                 {searchedImages.length > 0 && search !== "" && (
@@ -227,6 +253,9 @@ function Dashboard() {
               >
                 {" "}
                 Advance Search{" "}
+              </button>
+              <button className="searchButton" style={{marginLeft: '20px'}} onClick={handleClearAll}>
+                Clear All
               </button>
             </div>
             {isAdvanceSearch && (
