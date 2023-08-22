@@ -7,7 +7,11 @@ import LoadingSpinner from "./Loading";
 function UploadImage({ teamName, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+  const [imageDimensions, setImageDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
+  const [colors, setColors] = useState([]);
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState("");
   const [description, setDescription] = useState("");
@@ -21,14 +25,45 @@ function UploadImage({ teamName, onClose }) {
     const reader = new FileReader();
     reader.onload = function (e) {
       const image = new Image();
+      image.crossOrigin = "Anonymous";
       image.src = e.target.result;
+      console.log("img src", image.src);
       image.onload = function () {
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(image, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        buildRgb(imageData);
         const dimensions = { width: image.width, height: image.height };
         setImageDimensions(dimensions);
       };
     };
     reader.readAsDataURL(file);
-    console.log("selectedImage", imageDimensions); // Logging dimensions here
+  };
+
+  const buildRgb = (imageData) => {
+    const rgbValues = [];
+    console.log("data", imageData.data[1]);
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      const r = imageData.data[i];
+      const g = imageData.data[i + 1];
+      const b = imageData.data[i + 2];
+      const rgb = { r, g, b };
+
+      const isUnique = rgbValues.every(
+        (existingRgb) =>
+          existingRgb.r !== r || existingRgb.g !== g || existingRgb.b !== b
+      );
+
+      if (isUnique) {
+        rgbValues.push(rgb);
+      }
+
+      if (rgbValues.length >= 20) {
+        break;
+      }
+    }
+    setColors(rgbValues);
   };
 
   const handleInputChange = (event, setState) => {
@@ -66,7 +101,7 @@ function UploadImage({ teamName, onClose }) {
   const uploadImage = async (event) => {
     event.preventDefault();
     setIsLoading(true);
-    const formData = new FormData();
+    let formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
     formData.append("keywords", keywords.join(","));
@@ -75,7 +110,11 @@ function UploadImage({ teamName, onClose }) {
     formData.append("height", imageDimensions.height);
     formData.append("tag", tag);
     formData.append("teamName", teamName);
-    console.log('formData', formData)
+    colors.forEach((color) => {
+      formData.append("colors[]", JSON.stringify(color));
+    });
+    console.log("formData", formData);
+  
     try {
       const response = await axios.post(
         "http://localhost:5000/images/upload",
@@ -104,10 +143,14 @@ function UploadImage({ teamName, onClose }) {
         <div className="container">
           <form className="imageForm" onSubmit={uploadImage}>
             <input
+              className="imageBox"
               type="file"
               accept="image/jpeg, image/png, image/gif"
               onChange={handleImageChange}
             />
+            <canvas style={{ display: "none" }} id="canvas"></canvas>
+            <div id="palette"></div>
+            <div id="complementary"></div>
             {selectedImage && (
               <>
                 <div className="inputContainer">

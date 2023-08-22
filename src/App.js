@@ -15,9 +15,9 @@ const App = () => {
   const dispatch = useDispatch();
 
   const token = localStorage.getItem("token");
+  console.log('App js')
   useEffect(() => {
     if (token) {
-      console.log("token", token);
       axios
         .get("http://localhost:5000/auth/profile", {
           headers: {
@@ -25,7 +25,6 @@ const App = () => {
           },
         })
         .then((response) => {
-          console.log("resp", response);
           dispatch(loginUser(response.data));
         });
     }

@@ -8,6 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import LoadingSpinner from "./Loading";
 import { useSelector, useDispatch } from "react-redux";
 import { searchValue } from "./actions";
+import { ChromePicker } from "react-color";
 
 function Dashboard() {
   const [images, setImages] = useState([]);
@@ -17,13 +18,15 @@ function Dashboard() {
   const [selectedImage, setSelectedImage] = useState();
   const [isSelectedImage, setIsSelectedImage] = useState(false);
   const [isAdvanceSearch, setIsAdvanceSearch] = useState(false);
-  const [width, setWidth] = useState("");
-  const [height, setHeight] = useState("");
-  const [colorPalette, setColorPalette] = useState("");
+  const [width, setWidth] = useState('');
+  const [height, setHeight] = useState('');
+  const [colorPalette, setColorPalette] = useState(null);
+  const [color, setColor] = useState({ r: 255, g: 255, b: 255 }); // Initial color
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const itemsPerPage = 3;
-  
+
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
   const search = useSelector((state) => state.searchValue);
@@ -31,30 +34,57 @@ function Dashboard() {
 
   const handleFilterChange = (event) => {
     setFilterType(event.target.value);
-    console.log('filter', filterType)
+    // console.log("filter", filterType);
     dispatch(searchValue(event.target.value));
   };
+
+  const handleChangeComplete = (newColor) => {
+    if (newColor.rgb) {
+      setColor(newColor.rgb);
+      setColorPalette({
+        r: newColor.rgb.r,
+        g: newColor.rgb.g,
+        b: newColor.rgb.b,
+      });
+    } else {
+      setColorPalette({
+        r: newColor.r,
+        g: newColor.g,
+        b: newColor.b,
+      });
+    }
+  };
+
+  const handleColorInputChange = (event, channel) => {
+    const newValue = parseInt(event.target.value, 10) || 0;
+    const newColor = { ...color, [channel]: newValue };
+    setColor(newColor);
+    handleChangeComplete(newColor);
+  };
+
+  useEffect(() => {
+    console.log("colorPalette", colorPalette);
+  }, [colorPalette]);
 
   const handleSearchChange = (event) => {
     dispatch(searchValue(event.target.value));
-    getOnSearchImages();
+    // getOnSearchImages();
   };
 
-  const handleClearAll = ()=>{
-    dispatch(searchValue(''))
-    setWidth('');
-    setHeight('');
+  const handleClearAll = () => {
+    dispatch(searchValue(''));
+    setWidth("");
+    setHeight("");
     setColorPalette('');
     getImages();
-  }
+  };
 
   const handleSearchClick = async () => {
     setIsLoading(true);
     try {
       await getImages();
-      dispatch(searchValue(''));
-      if(filterType === "date")
-      {
+      dispatch(searchValue(""));
+      if (filterType === "date") {
         setFilterType("text");
       }
     } catch (error) {
@@ -63,8 +93,8 @@ function Dashboard() {
       setIsLoading(false);
     }
   };
- 
-  const getImages = () => {
+
+  const getImages = async () => {
     const queryParams = {
       page: currentPage,
       perPage: itemsPerPage,
@@ -75,41 +105,36 @@ function Dashboard() {
         queryParams.keyword = search;
       } else if (filterType === "date") {
         queryParams.date = search;
-      }
-      if (width) {
-        console.log('wdith', width)
-        queryParams.width = width;
-      }
-      if (height) {
-        queryParams.height = height;
-      }
-      if (colorPalette) {
-        queryParams.colorPalette = colorPalette;
       }
     }
-    console.log("query width", queryParams.width);
-
+    if (width) {
+      queryParams.width = width;
+    }
+    if (height) {
+      queryParams.height = height;
+    }
+    if (colorPalette) {
+      queryParams.colorPalette = JSON.stringify(colorPalette);
+    }
     console.log("query", queryParams);
-    axios
-      .get(`${serverUrl}/images/search`, {
+    try {
+      const response = await axios.get(`${serverUrl}/images/search`, {
         params: queryParams,
-      })
-      .then((res) => {
-        if (res.data.images.length === 0) {
-          toast.error("No results found", {
-            position: toast.POSITION.TOP_RIGHT,
-          });
-        }
-         setImages(res.data.images);
-         setIsLoading(false)
-      })
-      .catch((error) => {
-        toast.error(error);
-        setIsLoading(false)
       });
+      if (response.data.images.length === 0) {
+        toast.error("No results found", {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      }
+      setImages(response.data.images);
+      setIsLoading(false);
+    } catch (error) {
+      toast.error(error);
+      setIsLoading(false);
+    }
   };
 
-  const getOnSearchImages = ()=>{
+  const getOnSearchImages = () => {
     const queryParams = {
       page: currentPage,
       perPage: itemsPerPage,
@@ -122,7 +147,6 @@ function Dashboard() {
         queryParams.date = search;
       }
       if (width) {
-        console.log('wdith', width)
         queryParams.width = width;
       }
       if (height) {
@@ -148,7 +172,7 @@ function Dashboard() {
       .catch((error) => {
         toast.error(error);
       });
-  }
+  };
 
   const openSeletedImage = (imageId) => {
     const imageData = images.find((img) => img._id === imageId);
@@ -157,7 +181,8 @@ function Dashboard() {
 
   useEffect(() => {
     setIsLoading(true);
-    getImages()
+    getImages();
+    console.log("response", images);
   }, [user, currentPage]);
 
   return (
@@ -254,7 +279,11 @@ function Dashboard() {
                 {" "}
                 Advance Search{" "}
               </button>
-              <button className="searchButton" style={{marginLeft: '20px'}} onClick={handleClearAll}>
+              <button
+                className="searchButton"
+                style={{ marginLeft: "20px" }}
+                onClick={handleClearAll}
+              >
                 Clear All
               </button>
             </div>
@@ -278,11 +307,53 @@ function Dashboard() {
                 </div>
                 <div className="advanceSearchFields">
                   <label>Color Palette:</label>
+                </div>
+                <div className="advanceSearchFields">
+                  <label>RGB Values:</label>
                   <input
-                    type="text"
-                    value={colorPalette}
-                    onChange={(e) => setColorPalette(e.target.value)}
+                    type="number"
+                    value={color.r}
+                    className="inputColors"
+                    onChange={(e) => handleColorInputChange(e, "r")}
                   />
+                  <input
+                    type="number"
+                    value={color.g}
+                    className="inputColors"
+                    onChange={(e) => handleColorInputChange(e, "g")}
+                  />
+                  <input
+                    type="number"
+                    value={color.b}
+                    className="inputColors"
+                    onChange={(e) => handleColorInputChange(e, "b")}
+                  />
+                </div>
+
+                <div className="advanceSearchFields">
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <p>click on color Show/Hide</p>
+                    <div
+                      style={{
+                        backgroundColor: `rgb(${color.r},${color.g},${color.b})`,
+                        width: "30px",
+                        height: "30px",
+                        marginLeft: "10px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        setShowColorPicker(!showColorPicker);
+                      }}
+                    ></div>
+                  </div>
+                  {showColorPicker && (
+                    <div style={{ position: "absolute", right: "10px" }}>
+                      <ChromePicker
+                        color={color}
+                        onChangeComplete={handleChangeComplete}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -310,26 +381,28 @@ function Dashboard() {
           <ToastContainer />
         )}
       </div>
-      <div className="pagination">
-        <button
-          disabled={currentPage === 1}
-          onClick={() => {
-            setCurrentPage(currentPage - 1);
-          }}
-        >
-          {" "}
-          Previous{" "}
-        </button>
-        <button
-          disabled={images.length < itemsPerPage}
-          onClick={() => {
-            setCurrentPage(currentPage + 1);
-          }}
-        >
-          {" "}
-          Next{" "}
-        </button>
-      </div>
+      {images && (
+        <div className="pagination">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => {
+              setCurrentPage(currentPage - 1);
+            }}
+          >
+            {" "}
+            Previous{" "}
+          </button>
+          <button
+            disabled={images.length < itemsPerPage}
+            onClick={() => {
+              setCurrentPage(currentPage + 1);
+            }}
+          >
+            {" "}
+            Next{" "}
+          </button>
+        </div>
+      )}
 
       {/* Modals */}
       {isUpload && (

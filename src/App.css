@@ -211,6 +211,13 @@
   display: flex;
   align-items: center;
 }
+.container {
+  margin: 0 auto;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
 label {
   width: 30%;
@@ -345,4 +352,8 @@ label {
   gap: 20px;
   justify-content: right;
   margin-right: 10px;
+}
+
+.advanceSearchFields .inputColors{
+  width: 40px;
 }
