@@ -117,7 +117,7 @@ function UploadImage({ teamName, onClose }) {
   
     try {
       const response = await axios.post(
-        `{process.env.VERCEL_ENV}/images/upload`,
+        `{process.env.REACT_APP_VERCEL_ENV}/images/upload`,
         formData,
         {
           headers: {
