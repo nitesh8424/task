@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { loginUser } from './actions';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+require('dotenv').config()
 
 function User({ action, onClose }) {
   console.log('action', action)
@@ -61,7 +62,7 @@ function User({ action, onClose }) {
     console.log('data',data)
     if (action === "Register") {
       axios
-        .post("http://localhost:5000/auth/register", data)
+        .post(`${process.env.SERVER_URL}/auth/register`, data)
         .then((response) => {
           handleResponse(response, response.data.message);
           alert('Registration Successful')
@@ -71,7 +72,7 @@ function User({ action, onClose }) {
         });
     } else {
       axios
-        .post("http://localhost:5000/auth/login", data)
+        .post(`${process.env.SERVER_URL}/auth/login`, data)
         .then((response) => {
           localStorage.setItem("token", response.data.token)
           const userData = response.data.user;
