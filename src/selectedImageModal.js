@@ -13,7 +13,7 @@ function SelectedImage({ selectedImage, onClose }) {
           <div className="imageList">
             <div className="imageItem">
               <img
-                src={`${process.env.VERCEL_ENV}/${selectedImage.imageData.imageUrl}`}
+                src={`${process.env.REACT_APP_VERCEL_ENV}/${selectedImage.imageData.imageUrl}`}
                 alt={selectedImage.imageData.title}
               />
             </div>
