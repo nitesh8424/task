@@ -15,11 +15,11 @@ const App = () => {
   const dispatch = useDispatch();
 
   const token = localStorage.getItem("token");
-  console.log('App js')
+  
   useEffect(() => {
     if (token) {
       axios
-        .get("http://localhost:5000/auth/profile", {
+        .get(`${process.env.REACT_APP_VERCEL_ENV}/auth/profile`, {
           headers: {
             Authorization: `Bearer ${token}`, // Add the token to the headers
           },
