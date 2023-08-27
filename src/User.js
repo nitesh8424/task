@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useDispatch } from 'react-redux';
+import { loginUser } from './actions';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-function User({ action, onClose, setIsLogin}) {
+function User({ action, onClose }) {
+  console.log('action', action)
+  const dispatch = useDispatch();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [teamName, setTeamName] = useState("");
@@ -54,24 +58,24 @@ function User({ action, onClose, setIsLogin}) {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = { username, password, teamName };
-    if (action === "register") {
+    console.log('data',data)
+    if (action === "Register") {
       axios
-        .post("http://localhost:5000/register", data)
+        .post("http://localhost:5000/auth/register", data)
         .then((response) => {
           handleResponse(response, response.data.message);
+          alert('Registration Successful')
         })
         .catch((error) => {
           handleError(error);
         });
     } else {
       axios
-        .post("http://localhost:5000/login", data)
+        .post("http://localhost:5000/auth/login", data)
         .then((response) => {
-          handleResponse(response, response.data.message);
+          localStorage.setItem("token", response.data.token)
           const userData = response.data.user;
-          localStorage.setItem("userData", JSON.stringify(response.data.user))
-          localStorage.setItem("token", response.data.token);
-          setIsLogin(true);
+          dispatch(loginUser(userData));
         })
         .catch((error) => {
           handleError(error);
@@ -86,7 +90,7 @@ function User({ action, onClose, setIsLogin}) {
           &times;
         </button>
         <label className="modalTitle">
-          User {action === "register" ? "Registration" : "Login"}
+          User {action === "Register" ? "Registration" : "Login"}
         </label>
         <div className="container">
           <form className="imageForm" onSubmit={handleSubmit}>
@@ -97,6 +101,7 @@ function User({ action, onClose, setIsLogin}) {
                 placeholder="Username"
                 className="inputField"
                 onChange={handleUsernameChange}
+                required  
               />
             </div>
             <div className="inputContainer">
@@ -106,15 +111,17 @@ function User({ action, onClose, setIsLogin}) {
                 placeholder="Password"
                 className="inputField"
                 onChange={handlePasswordChange}
+                required
               />
             </div>
-            {action === "register" && (
+            {action === "Register" && (
               <div className="inputContainer">
                 <label>Team Name</label>
                 <select
                   value={teamName}
                   className="inputField"
                   onChange={handleTeamNameChange}
+                  required
                 >
                   <option value=""> select team name </option>
                   <option value="hr"> HR </option>
@@ -127,7 +134,7 @@ function User({ action, onClose, setIsLogin}) {
             <div className="submitButtonContainer">
               <input
                 type="submit"
-                value={action === "register" ? "Register" : "Login"}
+                value={action}
                 className="submitButton"
               />
             </div>
