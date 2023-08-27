@@ -2,7 +2,6 @@ import React from "react";
 
 function SelectedImage({ selectedImage, onClose }) {
   console.log('selected Image', selectedImage)
-  const serverUrl = "http://localhost:5000";
   return (
     <div className="uploadModalBox">
       <div className="uploadModal" style={{ height: "400px", overflowY: "scroll", scrollBehavior: "auto" }}>
@@ -14,7 +13,7 @@ function SelectedImage({ selectedImage, onClose }) {
           <div className="imageList">
             <div className="imageItem">
               <img
-                src={`${serverUrl}/${selectedImage.imageData.imageUrl}`}
+                src={`${process.env.SERVER_URL}/${selectedImage.imageData.imageUrl}`}
                 alt={selectedImage.imageData.title}
               />
             </div>
