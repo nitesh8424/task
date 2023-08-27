@@ -4,7 +4,6 @@ import { useDispatch } from 'react-redux';
 import { loginUser } from './actions';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-require('dotenv').config()
 
 function User({ action, onClose }) {
   console.log('action', action)
