@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingSpinner from "./Loading";
+require('dotenv').config();
 
 function UploadImage({ teamName, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -117,7 +118,7 @@ function UploadImage({ teamName, onClose }) {
   
     try {
       const response = await axios.post(
-        "http://localhost:5000/images/upload",
+        `{process.env.SERVER_URL}/images/upload`,
         formData,
         {
           headers: {
