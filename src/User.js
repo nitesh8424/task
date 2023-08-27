@@ -61,7 +61,7 @@ function User({ action, onClose }) {
     console.log('data',data)
     if (action === "Register") {
       axios
-        .post(`${process.env.VERCEL_ENV}/auth/register`, data)
+        .post(`${process.env.REACT_APP_VERCEL_ENV}/auth/register`, data)
         .then((response) => {
           handleResponse(response, response.data.message);
           alert('Registration Successful')
@@ -71,7 +71,7 @@ function User({ action, onClose }) {
         });
     } else {
       axios
-        .post(`${process.env.VERCEL_ENV}/auth/login`, data)
+        .post(`${process.env.REACT_APP_VERCEL_ENV}/auth/login`, data)
         .then((response) => {
           localStorage.setItem("token", response.data.token)
           const userData = response.data.user;
