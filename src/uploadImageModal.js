@@ -3,7 +3,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingSpinner from "./Loading";
-require('dotenv').config();
 
 function UploadImage({ teamName, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
