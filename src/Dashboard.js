@@ -117,7 +117,7 @@ function Dashboard() {
     }
     console.log("query", queryParams);
     try {
-      const response = await axios.get(`${process.env.VERCEL_ENV}/images/search`, {
+      const response = await axios.get(`${process.env.REACT_APP_VERCEL_ENV}/images/search`, {
         params: queryParams,
       });
       if (response.data.images.length === 0) {
@@ -157,7 +157,7 @@ function Dashboard() {
     }
     console.log("query", queryParams);
     axios
-      .get(`${process.env.VERCEL_ENV}/images/search`, {
+      .get(`${process.env.REACT_APP_VERCEL_ENV}/images/search`, {
         params: queryParams,
       })
       .then((res) => {
@@ -223,7 +223,7 @@ function Dashboard() {
                         }}
                       >
                         <img
-                          src={`${process.env.VERCEL_ENV}/${image.imageUrl}`}
+                          src={`${process.env.REACT_APP_VERCEL_ENV}/${image.imageUrl}`}
                           alt={image.title}
                         />
                         <div className="thumbnailDetails">
@@ -371,7 +371,7 @@ function Dashboard() {
                 setIsSelectedImage(!isSelectedImage);
               }}
             >
-              <img src={`${process.env.VERCEL_ENV}/${image.imageUrl}`} alt={image.title} />
+              <img src={`${process.env.REACT_APP_VERCEL_ENV}/${image.imageUrl}`} alt={image.title} />
               <h3>{image.title}</h3>
               <p>{image.description}</p>
             </div>
