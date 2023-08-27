@@ -9,7 +9,6 @@ import LoadingSpinner from "./Loading";
 import { useSelector, useDispatch } from "react-redux";
 import { searchValue } from "./actions";
 import { ChromePicker } from "react-color";
-require('dotenv').config()
 
 function Dashboard() {
   const [images, setImages] = useState([]);
