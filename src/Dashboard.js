@@ -9,6 +9,7 @@ import LoadingSpinner from "./Loading";
 import { useSelector, useDispatch } from "react-redux";
 import { searchValue } from "./actions";
 import { ChromePicker } from "react-color";
+require('dotenv').config()
 
 function Dashboard() {
   const [images, setImages] = useState([]);
@@ -30,7 +31,6 @@ function Dashboard() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
   const search = useSelector((state) => state.searchValue);
-  const serverUrl = "http://localhost:5000";
 
   const handleFilterChange = (event) => {
     setFilterType(event.target.value);
@@ -118,7 +118,7 @@ function Dashboard() {
     }
     console.log("query", queryParams);
     try {
-      const response = await axios.get(`${serverUrl}/images/search`, {
+      const response = await axios.get(`${process.env.SERVER_URL}/images/search`, {
         params: queryParams,
       });
       if (response.data.images.length === 0) {
@@ -158,7 +158,7 @@ function Dashboard() {
     }
     console.log("query", queryParams);
     axios
-      .get(`${serverUrl}/images/search`, {
+      .get(`${process.env.SERVER_URL}/images/search`, {
         params: queryParams,
       })
       .then((res) => {
@@ -224,7 +224,7 @@ function Dashboard() {
                         }}
                       >
                         <img
-                          src={`${serverUrl}/${image.imageUrl}`}
+                          src={`${process.env.SERVER_URL}/${image.imageUrl}`}
                           alt={image.title}
                         />
                         <div className="thumbnailDetails">
@@ -372,7 +372,7 @@ function Dashboard() {
                 setIsSelectedImage(!isSelectedImage);
               }}
             >
-              <img src={`${serverUrl}/${image.imageUrl}`} alt={image.title} />
+              <img src={`${process.env.SERVER_URL}/${image.imageUrl}`} alt={image.title} />
               <h3>{image.title}</h3>
               <p>{image.description}</p>
             </div>
